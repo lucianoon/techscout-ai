@@ -1,0 +1,37 @@
+# Segredos — jamais devem entrar na imagem
+.env
+.env.local
+.streamlit/secrets.toml
+
+# Controle de versão e CI
+.git/
+.github/
+
+# Ambientes e caches locais
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.json
+htmlcov/
+
+# Dados e logs gerados: a imagem monta volumes para isso
+data/
+logs/
+*.log
+*.pkl
+
+# Documentação não afeta o runtime
+docs/
+*.md
+!README.md
+
+# IDEs / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

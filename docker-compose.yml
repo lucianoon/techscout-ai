@@ -1,0 +1,31 @@
+services:
+  techscout:
+    build: .
+    container_name: techscout-ai
+    ports:
+      - "${TECHSCOUT_PORT:-8501}:8501"
+    environment:
+      # Sem valor padrão: a aplicação deve falhar de forma explícita se a
+      # chave não estiver no ambiente, em vez de subir e quebrar na primeira
+      # consulta.
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?defina OPENAI_API_KEY no .env}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-3.5-turbo}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - VECTOR_SEARCH_K=${VECTOR_SEARCH_K:-3}
+      - GRAPH_EXPANSION_DEPTH=${GRAPH_EXPANSION_DEPTH:-1}
+    volumes:
+      # O grafo e o ChromaDB persistem entre execuções; sem isso, cada
+      # `docker compose up` exigiria reingestão completa.
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=5).status==200 else 1)"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

@@ -1,0 +1,14 @@
+# Normaliza finais de linha: LF no repositório, nativo no working tree.
+# Sem isso, commits feitos no Windows entram com CRLF e a CI (Ubuntu) vê o
+# arquivo inteiro como modificado.
+* text=auto eol=lf
+
+# Scripts que precisam de CRLF para rodar no Windows.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+
+# Binários — nunca converter.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.pkl binary

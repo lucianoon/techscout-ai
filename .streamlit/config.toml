@@ -1,0 +1,23 @@
+# Configuração do Streamlit
+# Este arquivo é opcional - configurações padrão
+
+[theme]
+primaryColor = "#FF4B4B"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"
+
+[server]
+headless = true
+port = 8503
+runOnSave = false
+enableCORS = false
+enableXsrfProtection = false
+
+[runner]
+fastReruns = true
+
+[browser]
+gatherUsageStats = false
+

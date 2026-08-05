@@ -1,0 +1,47 @@
+# Segredos — nunca versionar
+.env
+.env.local
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+ENV/
+
+# Artefatos gerados pela ingestão.
+# `data/` inteiro é ignorado, exceto os exemplos versionados em data/samples/.
+data/*
+!data/samples/
+*.pkl
+
+# Logs
+logs/
+*.log
+
+# Testes e qualidade
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.json
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
