@@ -40,6 +40,11 @@ jobs:
         # invalidar os números publicados em docs/BENCHMARK_RESULTS.md.
         run: python -m techscout.evaluation -k 5
 
+      - name: Extraction baseline
+        # Lê a extração cacheada em data/eval/ — não chama a API. Regerar o
+        # cache é ato deliberado (`make eval-extraction-refresh`).
+        run: python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5
+
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
         with:

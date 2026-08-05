@@ -7,6 +7,7 @@ help:
 	@echo "test       pytest com cobertura de branch e piso de 75%"
 	@echo "check      lint + typecheck + test (o que a CI roda)"
 	@echo "eval       Recall@K e MRR do grafo, do BM25 e da fusão"
+	@echo "eval-extraction  extração por LLM vs grafo curado (usa cache)"
 	@echo "run        sobe a interface Streamlit"
 	@echo "ingest     executa a ingestão de dados"
 	@echo "docker     constrói a imagem"
@@ -33,6 +34,13 @@ check: lint typecheck test
 
 eval:
 	python -m techscout.evaluation -k 5
+
+eval-extraction:
+	python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5
+
+# Reextrai chamando a API — consome créditos e reescreve o cache versionado.
+eval-extraction-refresh:
+	python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5 --refresh
 
 run:
 	streamlit run streamlit_app.py

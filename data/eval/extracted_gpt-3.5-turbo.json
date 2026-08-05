@@ -1,0 +1,151 @@
+{
+  "modelo": "gpt-3.5-turbo",
+  "descricao": "Saída bruta da extração, cacheada para que o benchmark seja reproduzível sem consumir API. Regerar com --refresh.",
+  "por_documento": {
+    "d01": [
+      {
+        "sujeito": "Ana Souza",
+        "relacao": "fundou",
+        "objeto": "Nebula AI"
+      }
+    ],
+    "d02": [
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "levanta",
+        "objeto": "Series A"
+      },
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "anunciou",
+        "objeto": "rodada Series A"
+      },
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "liderada_por",
+        "objeto": "Horizon Ventures"
+      }
+    ],
+    "d03": [
+      {
+        "sujeito": "Horizon Ventures",
+        "relacao": "vendeu",
+        "objeto": "OldTech"
+      },
+      {
+        "sujeito": "Horizon Ventures",
+        "relacao": "investiu_em",
+        "objeto": "OldTech"
+      }
+    ],
+    "d04": [
+      {
+        "sujeito": "Pedro Santos",
+        "relacao": "ex_funcionario_de",
+        "objeto": "OldTech"
+      },
+      {
+        "sujeito": "Pedro Santos",
+        "relacao": "trabalhou_em",
+        "objeto": "OldTech"
+      }
+    ],
+    "d05": [
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "consultor_de",
+        "objeto": "Pedro Santos"
+      }
+    ],
+    "d06": [
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "adquiriu",
+        "objeto": "DataPonte"
+      }
+    ],
+    "d07": [
+      {
+        "sujeito": "Rafael Duarte",
+        "relacao": "fundou",
+        "objeto": "DataPonte"
+      }
+    ],
+    "d08": [
+      {
+        "sujeito": "Horizon Ventures",
+        "relacao": "liderou",
+        "objeto": "Marina Klein"
+      },
+      {
+        "sujeito": "Horizon Ventures",
+        "relacao": "investiu_em",
+        "objeto": "infraestrutura"
+      },
+      {
+        "sujeito": "Horizon Ventures",
+        "relacao": "investiu_em",
+        "objeto": "saúde"
+      }
+    ],
+    "d09": [
+      {
+        "sujeito": "Clara Nogueira",
+        "relacao": "fundou",
+        "objeto": "Orbita Bio"
+      }
+    ],
+    "d10": [
+      {
+        "sujeito": "Lumen Capital",
+        "relacao": "investiu_em",
+        "objeto": "Orbita Bio"
+      }
+    ],
+    "d11": [
+      {
+        "sujeito": "Lumen Capital",
+        "relacao": "investiu_em",
+        "objeto": "OldTech"
+      }
+    ],
+    "d12": [
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "ex_funcionario_de",
+        "objeto": "DataPonte"
+      },
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "trabalhou_em",
+        "objeto": "DataPonte"
+      }
+    ],
+    "d13": [
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "trabalhou_em",
+        "objeto": "Orbita Bio"
+      },
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "liderou",
+        "objeto": "construção da plataforma de análise genômica"
+      }
+    ],
+    "d14": [
+      {
+        "sujeito": "OldTech",
+        "relacao": "adquiriu",
+        "objeto": "TechNorte"
+      }
+    ],
+    "d15": [
+      {
+        "sujeito": "Marina Klein",
+        "relacao": "consultor_de",
+        "objeto": "Orbita Bio"
+      }
+    ]
+  }
+}

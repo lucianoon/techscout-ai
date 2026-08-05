@@ -107,13 +107,134 @@ Estas condicionam qualquer uso dos números acima:
 5. **Uma única execução.** Determinística, então repetir dá o mesmo resultado
    — o que também significa que não há variância medida para comparar.
 
-## O que tornaria isso conclusivo
+---
+
+# Parte 2 — Extração por LLM contra o grafo curado
+
+A Parte 1 mede recuperação sobre um grafo *correto*. Esta mede quão correto é
+o grafo que o LLM produz, e quanto o erro custa lá na ponta.
+
+```bash
+make eval-extraction            # usa o cache versionado, não chama API
+make eval-extraction-refresh    # reextrai (consome créditos)
+```
+
+A saída bruta fica em `data/eval/extracted_gpt-3.5-turbo.json`, versionada
+para que o número seja reproduzível sem gastar API — e para que a CI possa
+verificá-lo a cada push.
+
+## O que a primeira medição revelou
+
+Modelo `gpt-3.5-turbo`, 15 documentos, gabarito de 15 triplas:
+
+| Nível | Precisão | Revocação | F1 |
+|---|---:|---:|---:|
+| Estrito (sujeito, relação, objeto) | 0,345 | 0,667 | 0,455 |
+| Por par (ignora o rótulo) | 0,444 | 0,800 | 0,571 |
+
+O modelo extraiu **29 triplas onde o gabarito tem 15**. E o diagnóstico não
+era compreensão, era desobediência:
+
+| Aderência ao contrato do prompt | |
+|---|---:|
+| Relação dentro do vocabulário fechado | **41,4%** |
+| Objeto parece entidade (≤ 3 palavras) | 69,0% |
+| Rótulos de relação inventados | **15** |
+
+O prompt lista 10 relações permitidas. O modelo inventou outras 15
+(`assumiu_como`, `promovida_a`, `a_frente_da`…) e usou sintagmas inteiros como
+objeto ("expandir a equipe de pesquisa").
+
+**Causa-raiz:** a regra 3 do prompt dizia *"use relações curtas e
+descritivas"* — instrução que contradiz frontalmente um vocabulário fechado.
+O modelo obedeceu à regra errada.
+
+## Depois de corrigir o prompt
+
+Regras reescritas: descartar o que não couber no vocabulário em vez de
+adaptar, e exigir nome próprio como sujeito e objeto.
+
+| Métrica | Prompt v1 | Prompt v2 | |
+|---|---:|---:|---|
+| F1 estrito | 0,455 | **0,579** | +27% |
+| F1 por par | 0,571 | **0,857** | +50% |
+| **Revocação por par** | 0,800 | **1,000** | +25% |
+| Aderência ao vocabulário | 41,4% | **87,0%** | +110% |
+| Objeto é entidade | 69,0% | **95,7%** | +39% |
+| Rótulos inventados | 15 | **3** | −80% |
+
+**Revocação por par de 1,000**: o modelo passou a encontrar *todas* as
+conexões do gabarito. Todo o erro residual é de rótulo ou de direção — e como
+o grafo é não-direcionado, direção não afeta a recuperação.
+
+Os erros que sobraram são quase todos inversões:
+
+| Gabarito | Extraído |
+|---|---|
+| `Pedro Santos --[consultor_de]--> Nebula AI` | `Nebula AI --[consultor_de]--> Pedro Santos` |
+| `Marina Klein --[trabalhou_em]--> Horizon Ventures` | `Horizon Ventures --[liderou]--> Marina Klein` |
+| `Horizon Ventures --[investiu_em]--> Nebula AI` | `Nebula AI --[liderada_por]--> Horizon Ventures` |
+
+## Quanto o erro de extração custa na recuperação
+
+Mesmo benchmark da Parte 1, rodado duas vezes — sobre o grafo curado e sobre
+o extraído (perguntas relacionais + profundas, n=12, k=5):
+
+| Grafo | Recuperador | Recall@5 | MRR |
+|---|---|---:|---:|
+| curado | grafo | 0,778 | 0,694 |
+| extraído (v1) | grafo | 0,722 | 0,729 |
+| extraído (v2) | grafo | **0,778** | **0,799** |
+| curado | híbrido | 0,806 | 0,819 |
+| extraído (v1) | híbrido | 0,806 | 0,819 |
+| extraído (v2) | híbrido | **0,806** | **0,875** |
+
+Três leituras, em ordem de importância:
+
+**1. O custo da extração é surpreendentemente baixo.** Mesmo com o prompt v1
+— F1 estrito de 0,455 — a recuperação caiu só 0,056 em Recall e *subiu* em
+MRR. Recuperação depende da **proveniência**, não do rótulo: uma tripla com
+relação errada ainda aponta para o documento certo.
+
+**2. O híbrido absorve o erro por completo.** Recall idêntico (0,806) nas três
+condições. É a terceira vez neste benchmark que a fusão se mostra o
+componente robusto.
+
+**3. O grafo extraído supera o curado em MRR** (0,799 vs 0,694). Não é mágica:
+o modelo extrai fatos verdadeiros que meu gabarito omitiu — `Ana Souza
+--[trabalhou_em]--> Google`, `Pedro Santos --[trabalhou_em]--> OldTech` — e
+essas arestas a mais ajudam a ranquear. O gabarito foi curado a partir das
+perguntas, não do texto completo.
+
+## Limitações desta parte
+
+Somam-se às da Parte 1:
+
+1. **O prompt foi ajustado depois de ver os erros nestes mesmos 15
+   documentos.** É *overfitting* de manual: os números do v2 são otimistas e
+   não devem ser lidos como desempenho em texto novo. O A/B é honesto quanto
+   à direção da melhora, não quanto à magnitude.
+2. **A precisão está subestimada.** O gabarito cobre apenas os fatos
+   necessários para responder às 15 perguntas, então extrações corretas mas
+   fora do escopo contam como falso positivo. A revocação não sofre desse
+   problema — e é por isso que a revocação por par é a métrica mais confiável
+   aqui.
+3. **Um modelo, uma execução.** Só `gpt-3.5-turbo`, temperatura 0. Sem
+   variância medida e sem comparação entre modelos.
+4. **A direção da relação não é avaliada de fato.** O grafo é não-direcionado,
+   então inversões passam sem punição na recuperação — mas seriam erros graves
+   num grafo direcionado.
+
+## O que tornaria tudo isso conclusivo
 
 Em ordem de retorno:
 
-1. Ampliar para ~100 perguntas sobre um corpus real de notícias, o suficiente
-   para intervalos de confiança.
-2. Avaliar sobre grafo extraído por LLM, medindo separadamente o erro de
-   extração para saber quanto ele custa.
-3. Corrigir o ranqueamento do grafo, que hoje é a fraqueza clara: o recall
-   mostra que a informação é alcançada, o MRR mostra que ela não sobe ao topo.
+1. **Corpus de validação separado**, não usado para ajustar prompt nem
+   ranqueador. Sem isso, os ganhos do v2 permanecem não verificados.
+2. Ampliar para ~100 perguntas sobre notícias reais, o suficiente para
+   intervalos de confiança.
+3. Comparar modelos (gpt-4o, Claude) sobre o mesmo gabarito, já que a
+   infraestrutura de medição agora existe.
+4. Migrar para `MultiDiGraph` e passar a punir inversão de direção.
+5. Corrigir o ranqueamento do grafo: o recall mostra que a informação é
+   alcançada, o MRR mostra que ela não sobe ao topo.

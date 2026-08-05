@@ -1,0 +1,181 @@
+{
+  "modelo": "gpt-3.5-turbo",
+  "descricao": "Saída bruta da extração, cacheada para que o benchmark seja reproduzível sem consumir API. Regerar com --refresh.",
+  "por_documento": {
+    "d01": [
+      {
+        "sujeito": "Ana Souza",
+        "relacao": "fundou",
+        "objeto": "Nebula AI"
+      },
+      {
+        "sujeito": "Ana Souza",
+        "relacao": "trabalhou_em",
+        "objeto": "Google"
+      }
+    ],
+    "d02": [
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "levanta",
+        "objeto": "Series A de US$ 10 milhões"
+      },
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "anunciou",
+        "objeto": "rodada Series A de US$ 10 milhões"
+      },
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "usados para",
+        "objeto": "expandir a equipe de pesquisa"
+      },
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "liderada por",
+        "objeto": "Horizon Ventures"
+      }
+    ],
+    "d03": [
+      {
+        "sujeito": "Horizon Ventures",
+        "relacao": "vendeu",
+        "objeto": "OldTech"
+      },
+      {
+        "sujeito": "Horizon Ventures",
+        "relacao": "investimento_de",
+        "objeto": "OldTech"
+      }
+    ],
+    "d04": [
+      {
+        "sujeito": "Pedro Santos",
+        "relacao": "deixou",
+        "objeto": "CTO da OldTech"
+      },
+      {
+        "sujeito": "Pedro Santos",
+        "relacao": "foi responsável pela",
+        "objeto": "migração da companhia para arquitetura de nuvem"
+      }
+    ],
+    "d05": [
+      {
+        "sujeito": "Pedro Santos",
+        "relacao": "consultor_de",
+        "objeto": "Nebula AI"
+      }
+    ],
+    "d06": [
+      {
+        "sujeito": "Nebula AI",
+        "relacao": "adquiriu",
+        "objeto": "DataPonte"
+      },
+      {
+        "sujeito": "DataPonte",
+        "relacao": "especializada_em",
+        "objeto": "pipelines de dados"
+      }
+    ],
+    "d07": [
+      {
+        "sujeito": "Rafael Duarte",
+        "relacao": "fundou",
+        "objeto": "DataPonte"
+      },
+      {
+        "sujeito": "Rafael Duarte",
+        "relacao": "trabalhou_em",
+        "objeto": "setor financeiro"
+      }
+    ],
+    "d08": [
+      {
+        "sujeito": "Marina Klein",
+        "relacao": "lidera",
+        "objeto": "teses de investimento em infraestrutura e saúde"
+      },
+      {
+        "sujeito": "Marina Klein",
+        "relacao": "promovida a",
+        "objeto": "sócia da Horizon Ventures"
+      }
+    ],
+    "d09": [
+      {
+        "sujeito": "Clara Nogueira",
+        "relacao": "fundou",
+        "objeto": "Orbita Bio"
+      }
+    ],
+    "d10": [
+      {
+        "sujeito": "Lumen Capital",
+        "relacao": "investiu_em",
+        "objeto": "Orbita Bio"
+      }
+    ],
+    "d11": [
+      {
+        "sujeito": "Lumen Capital",
+        "relacao": "investiu_em",
+        "objeto": "OldTech"
+      }
+    ],
+    "d12": [
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "deixou",
+        "objeto": "DataPonte"
+      },
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "engenheiro-chefe_da",
+        "objeto": "DataPonte"
+      },
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "à_frente_da",
+        "objeto": "plataforma_de_ingestão"
+      }
+    ],
+    "d13": [
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "lidera",
+        "objeto": "construção da plataforma de análise genômica"
+      },
+      {
+        "sujeito": "Orbita Bio",
+        "relacao": "anuncia",
+        "objeto": "diretor de tecnologia Bruno Alencar"
+      },
+      {
+        "sujeito": "Bruno Alencar",
+        "relacao": "assumiu como",
+        "objeto": "CTO da Orbita Bio"
+      }
+    ],
+    "d14": [
+      {
+        "sujeito": "OldTech",
+        "relacao": "adquiriu",
+        "objeto": "TechNorte"
+      },
+      {
+        "sujeito": "OldTech",
+        "relacao": "ampliando_atuacao_em",
+        "objeto": "integração_de_sistemas_legados_no_mercado_corporativo"
+      }
+    ],
+    "d15": [
+      {
+        "sujeito": "Marina Klein",
+        "relacao": "consultor_de",
+        "objeto": "Orbita Bio"
+      }
+    ]
+  }
+}

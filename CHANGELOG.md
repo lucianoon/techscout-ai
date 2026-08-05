@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.4.0
+
+Extração por LLM medida contra o grafo curado — a lacuna que a 0.3.0 deixou
+em aberto ao isolar recuperação de extração.
+
+- `techscout.extraction_eval`: precisão, revocação e F1 das triplas em dois
+  níveis — estrito (sujeito, relação, objeto) e por par de entidades. A
+  distância entre os dois separa erro de vocabulário de erro de percepção.
+- Métrica de aderência ao contrato do prompt: fração de relações dentro do
+  vocabulário fechado, fração de objetos que parecem entidade e contagem de
+  rótulos inventados.
+- Medição do custo ponta a ponta: o mesmo benchmark de recuperação rodado
+  sobre o grafo curado e sobre o extraído, para quantificar o que o erro de
+  extração de fato prejudica.
+- Extração cacheada em `data/eval/extracted_<modelo>.json`, versionada. A CI
+  verifica o baseline a cada push sem consumir API; regerar é ato deliberado
+  (`make eval-extraction-refresh`).
+- **Defeito encontrado pela medição e corrigido:** o prompt pedia relações
+  "curtas e descritivas" enquanto anunciava um vocabulário fechado de 10
+  relações. O modelo obedecia à instrução contraditória e inventava 15
+  rótulos, além de usar sintagmas inteiros como objeto. Reescritas as regras,
+  a aderência ao vocabulário subiu de 41,4% para 87,0%, o F1 por par de 0,571
+  para 0,857 e a revocação por par chegou a 1,000.
+- `VOCABULARIO_RELACOES` extraído para constante em `triple_extractor`, para
+  que prompt e avaliação não possam divergir.
+- Normalização de entidade mais robusta: espaços colapsados antes da remoção
+  de artigos, senão "a  da  Nebula" perdia só o primeiro prefixo.
+- 41 testes novos, incluindo verificação de que o gabarito só usa relações do
+  vocabulário — cobrar do modelo um rótulo que o prompt nunca pediu invalidaria
+  a métrica.
+
 ## 0.3.0
 
 Baseline de recuperação medido — a lacuna que o README da 0.2.0 declarava.

@@ -31,7 +31,8 @@ hops; the vector index covers everything else.
 | Evidence | What it demonstrates |
 |---|---|
 | Measured baseline: Recall@K and MRR | Graph, BM25 and their fusion, over a labelled dataset |
-| 171 offline tests | Graph, persistence, LLM parsing, ingestion, sources and metrics |
+| LLM extraction measured against gold | Triple precision/recall and what its error costs downstream |
+| 212 offline tests | Graph, persistence, LLM parsing, ingestion, sources and metrics |
 | 82% branch coverage, ≥ 75% gate in CI | Coverage measured, regressions blocked |
 | Suite and baseline run without `OPENAI_API_KEY` | Dependency injection plus deterministic retrievers |
 | Baseline re-run on every push | A ranking change shows up in the CI log |
@@ -67,9 +68,36 @@ every k and on both metrics**. That is what justifies keeping both structures
 instead of picking one. On the factual control questions BM25 scores
 perfectly, as expected — had the graph won there, the dataset would be biased.
 
-Methodology, provenance and limitations in
-[docs/BENCHMARK_RESULTS.md](docs/BENCHMARK_RESULTS.md). Still **not** measured:
-LLM triple-extraction accuracy and final-answer faithfulness.
+### What extraction error costs
+
+The table above uses a curated graph, to isolate retrieval from extraction.
+But in production the graph comes from an LLM — so that was measured too:
+
+| | Extraction (pair F1) | Graph Recall@5 | MRR |
+|---|---:|---:|---:|
+| Curated graph | — | 0.778 | 0.694 |
+| Graph extracted by `gpt-3.5-turbo` | 0.857 | 0.778 | 0.799 |
+
+**The cost is close to zero** — and the reason is structural: retrieval
+depends on *provenance* (which document asserted the fact), not on the
+relation label. A triple with the wrong label still points at the right
+document. Even in the first run, at 0.455 strict F1, Recall dropped only
+0.056.
+
+The measurement also surfaced a concrete defect: the prompt asked for "short,
+descriptive relations" while announcing a closed vocabulary. The model obeyed
+the wrong instruction and invented 15 labels. With the contradiction removed,
+vocabulary adherence went from 41.4% to 87.0% and **pair-level recall reached
+1.000** — every connection in the gold graph found.
+
+```bash
+make eval-extraction   # uses the versioned cache, no API calls
+```
+
+Methodology, the full prompt A/B and the limitations — including the fact that
+the prompt was tuned on the same 15 documents, which makes the numbers
+optimistic — in [docs/BENCHMARK_RESULTS.md](docs/BENCHMARK_RESULTS.md). Still
+**not** measured: faithfulness of the final synthesised answer.
 
 ## Architecture
 
@@ -168,9 +196,9 @@ In order of importance to anyone evaluating this project:
    below ~0.10 as indistinguishable, and read the
    [k=3 inversion](docs/BENCHMARK_RESULTS.md#leitura-honesta) before quoting
    any number.
-2. **The benchmark graph is curated, not extracted.** That is deliberate — it
-   isolates retrieval from extraction — but it means LLM extraction error is
-   *not* accounted for in the published numbers.
+2. **The extraction prompt was tuned on the same corpus that evaluates it.**
+   The prompt-v2 gains are optimistic: a held-out corpus is needed to know how
+   much of them survives on unseen text.
 3. **Triple quality is LLM quality.** Extraction uses a closed vocabulary
    (`founded`, `invested_in`, `acquired`, …) at temperature 0, which buys
    consistency, not correctness. Wrong triples become wrong edges, and the

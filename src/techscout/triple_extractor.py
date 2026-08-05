@@ -11,6 +11,24 @@ from pydantic import SecretStr
 from techscout.logger import logger
 from techscout.settings import settings
 
+# Vocabulário fechado de relações. Fica aqui, e não embutido no texto do
+# prompt, para que a avaliação da extração possa medir aderência contra a
+# mesma lista que o prompt anuncia — ver `techscout.extraction_eval`.
+VOCABULARIO_RELACOES = frozenset(
+    {
+        "adquiriu",
+        "consultor_de",
+        "especialista_em",
+        "ex_funcionario_de",
+        "fundou",
+        "investiu_em",
+        "liderou",
+        "parceiro_de",
+        "trabalhou_em",
+        "vendeu",
+    }
+)
+
 
 class TripleExtractor:
     """Extrai triplas de conhecimento de textos usando LLM"""
@@ -91,26 +109,30 @@ class TripleExtractor:
     
     def _build_prompt(self, text: str) -> str:
         """Constrói o prompt para o LLM"""
+        vocabulario = "\n".join(f"- {rel}" for rel in sorted(VOCABULARIO_RELACOES))
         return f"""
 Analise o texto e extraia relações estruturadas no formato JSON estrito.
 Extraia apenas relações factuais e explícitas.
 
 Formato esperado:
 [
-  {{"sujeito": "Entidade1", "relacao": "verbo", "objeto": "Entidade2"}},
-  {{"sujeito": "Entidade3", "relacao": "verbo", "objeto": "Entidade4"}}
+  {{"sujeito": "Entidade1", "relacao": "fundou", "objeto": "Entidade2"}},
+  {{"sujeito": "Entidade3", "relacao": "investiu_em", "objeto": "Entidade4"}}
 ]
 
-Tipos de relação aceitos:
-- fundou, trabalhou_em, investiu_em, consultor_de
-- liderou, adquiriu, vendeu, parceiro_de
-- especialista_em, ex_funcionario_de
+O campo "relacao" só pode conter um destes valores, exatamente como escrito:
+{vocabulario}
 
 Regras:
-1. Use apenas relações claramente mencionadas no texto
-2. Mantenha nomes de entidades exatamente como aparecem
-3. Use relações curtas e descritivas
-4. Retorne array vazio [] se nenhuma relação for encontrada
+1. Use apenas relações claramente mencionadas no texto.
+2. Se uma relação do texto não couber em nenhum dos valores acima, DESCARTE-A.
+   Não invente rótulos novos e não adapte os existentes.
+3. Sujeito e objeto devem ser nomes próprios de pessoas, empresas ou
+   organizações — nunca cargos, valores, datas ou frases descritivas.
+   "Pedro Santos" é válido; "CTO da OldTech" não é.
+4. Mantenha os nomes das entidades exatamente como aparecem no texto,
+   sem artigos ("a Nebula AI" vira "Nebula AI").
+5. Retorne array vazio [] se nenhuma relação do vocabulário for encontrada.
 
 Texto:
 {text}

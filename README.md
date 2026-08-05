@@ -30,7 +30,8 @@ percorre esses saltos; o índice vetorial cobre o resto.
 | Evidência | O que demonstra |
 |---|---|
 | Baseline medido: Recall@K e MRR | Grafo, BM25 e a fusão dos dois, sobre dataset rotulado |
-| 171 testes offline | Grafo, persistência, parsing de LLM, ingestão, fontes e métricas |
+| Extração por LLM medida contra gabarito | Precisão/revocação das triplas e o custo do erro na recuperação |
+| 212 testes offline | Grafo, persistência, parsing de LLM, ingestão, fontes e métricas |
 | 82% de branch coverage, gate ≥ 75% na CI | Cobertura medida e regressão bloqueada |
 | Suíte e baseline rodam sem `OPENAI_API_KEY` | Injeção de dependência + recuperadores determinísticos |
 | Baseline reexecutado a cada push | Mudança de ranqueamento aparece no log da CI |
@@ -67,9 +68,36 @@ estruturas em vez de escolher uma. Nas perguntas factuais de controle o BM25
 acerta tudo, como esperado — se o grafo tivesse vencido ali, o dataset estaria
 enviesado.
 
-Metodologia, procedência e limitações em
+### Quanto o erro de extração custa
+
+A tabela acima usa um grafo curado, para isolar recuperação de extração. Mas
+em produção o grafo vem de um LLM — então isso também foi medido:
+
+| | Extração (F1 por par) | Recall@5 do grafo | MRR |
+|---|---:|---:|---:|
+| Grafo curado | — | 0,778 | 0,694 |
+| Grafo extraído por `gpt-3.5-turbo` | 0,857 | 0,778 | 0,799 |
+
+**O custo é quase nulo** — e o motivo é estrutural: a recuperação depende da
+*proveniência* (qual documento afirmou o fato), não do rótulo da relação. Uma
+tripla com relação errada ainda aponta para o documento certo. Mesmo na
+primeira medição, com F1 estrito de 0,455, o Recall caiu só 0,056.
+
+A medição também encontrou um defeito concreto: o prompt pedia relações
+"curtas e descritivas" enquanto anunciava um vocabulário fechado. O modelo
+obedecia à instrução errada e inventava 15 rótulos. Corrigida a contradição, a
+aderência ao vocabulário foi de 41,4% para 87,0% e a **revocação por par
+chegou a 1,000** — todas as conexões do gabarito encontradas.
+
+```bash
+make eval-extraction   # usa o cache versionado, não chama API
+```
+
+Metodologia, o A/B completo do prompt e as limitações — inclusive o fato de o
+prompt ter sido ajustado sobre os mesmos 15 documentos, o que torna os
+números otimistas — em
 [docs/BENCHMARK_RESULTS.md](docs/BENCHMARK_RESULTS.md). Ainda **não** medido:
-acurácia da extração de triplas por LLM e fidelidade da resposta final.
+fidelidade da resposta final sintetizada.
 
 ## Arquitetura
 
@@ -168,9 +196,9 @@ Em ordem de importância para quem for avaliar o projeto:
    diferenças abaixo de ~0,10 como indistinguíveis, e veja a
    [inversão em k=3](docs/BENCHMARK_RESULTS.md#leitura-honesta) antes de citar
    qualquer número.
-2. **O grafo do benchmark é curado, não extraído.** Isso é proposital — isola
-   recuperação de extração — mas significa que o erro de extração por LLM
-   *não* está contabilizado nos números publicados.
+2. **O prompt de extração foi ajustado sobre o mesmo corpus que o avalia.**
+   Os ganhos do prompt v2 são otimistas: falta um corpus de validação
+   separado para saber quanto deles sobrevive em texto novo.
 3. **A qualidade das triplas é a qualidade do LLM.** A extração usa um
    vocabulário fechado (`fundou`, `investiu_em`, `adquiriu`, …) e temperatura
    0, o que dá consistência, não correção. Triplas erradas viram arestas
