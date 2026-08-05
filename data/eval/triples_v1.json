@@ -1,0 +1,21 @@
+{
+  "version": "triples_v1",
+  "descricao": "Grafo de referência do corpus_v1, curado à mão. Fixá-lo isola o que está sendo medido: a qualidade da RECUPERAÇÃO sobre um grafo dado, e não a acurácia da extração de triplas por LLM — que varia por modelo e execução e é avaliada separadamente.",
+  "triplas": [
+    {"sujeito": "Ana Souza", "relacao": "fundou", "objeto": "Nebula AI", "fonte": "d01"},
+    {"sujeito": "Horizon Ventures", "relacao": "investiu_em", "objeto": "Nebula AI", "fonte": "d02"},
+    {"sujeito": "Horizon Ventures", "relacao": "vendeu", "objeto": "OldTech", "fonte": "d03"},
+    {"sujeito": "Pedro Santos", "relacao": "ex_funcionario_de", "objeto": "OldTech", "fonte": "d04"},
+    {"sujeito": "Pedro Santos", "relacao": "consultor_de", "objeto": "Nebula AI", "fonte": "d05"},
+    {"sujeito": "Nebula AI", "relacao": "adquiriu", "objeto": "DataPonte", "fonte": "d06"},
+    {"sujeito": "Rafael Duarte", "relacao": "fundou", "objeto": "DataPonte", "fonte": "d07"},
+    {"sujeito": "Marina Klein", "relacao": "trabalhou_em", "objeto": "Horizon Ventures", "fonte": "d08"},
+    {"sujeito": "Clara Nogueira", "relacao": "fundou", "objeto": "Orbita Bio", "fonte": "d09"},
+    {"sujeito": "Lumen Capital", "relacao": "investiu_em", "objeto": "Orbita Bio", "fonte": "d10"},
+    {"sujeito": "Lumen Capital", "relacao": "investiu_em", "objeto": "OldTech", "fonte": "d11"},
+    {"sujeito": "Bruno Alencar", "relacao": "ex_funcionario_de", "objeto": "DataPonte", "fonte": "d12"},
+    {"sujeito": "Bruno Alencar", "relacao": "liderou", "objeto": "Orbita Bio", "fonte": "d13"},
+    {"sujeito": "OldTech", "relacao": "adquiriu", "objeto": "TechNorte", "fonte": "d14"},
+    {"sujeito": "Marina Klein", "relacao": "consultor_de", "objeto": "Orbita Bio", "fonte": "d15"}
+  ]
+}

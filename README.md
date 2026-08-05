@@ -29,19 +29,47 @@ percorre esses saltos; o índice vetorial cobre o resto.
 
 | Evidência | O que demonstra |
 |---|---|
-| 126 testes offline | Grafo, persistência, parsing de LLM, ingestão e fontes de dados |
+| Baseline medido: Recall@K e MRR | Grafo, BM25 e a fusão dos dois, sobre dataset rotulado |
+| 171 testes offline | Grafo, persistência, parsing de LLM, ingestão, fontes e métricas |
 | 82% de branch coverage, gate ≥ 75% na CI | Cobertura medida e regressão bloqueada |
-| Suíte roda sem `OPENAI_API_KEY` | Injeção de dependência + caminhos de degradação |
+| Suíte e baseline rodam sem `OPENAI_API_KEY` | Injeção de dependência + recuperadores determinísticos |
+| Baseline reexecutado a cada push | Mudança de ranqueamento aparece no log da CI |
 | `ruff` + `mypy` como gates | Lint e tipos verificados, não aspiracionais |
 | Persistência em JSON, pickle recusado | Carregar grafo não executa código arbitrário |
-| Degradação explícita sem chave | Busca semântica cai para textual em vez de falhar |
 
-**O que não está medido:** este repositório **não** tem baseline de qualidade
-de recuperação. Não há dataset rotulado, nem Recall@K, nem MRR — logo, não há
-como afirmar que o grafo melhora as respostas em relação a busca vetorial
-pura. O que os testes garantem é que o sistema se comporta como especificado,
-não que as triplas extraídas estejam corretas. Ver
-[limitações](#limitações-conhecidas).
+## Baseline de recuperação
+
+Os dois lados devolvem uma lista ordenada de documentos e são medidos pelo
+mesmo rótulo. Corpus de 15 documentos, 15 perguntas rotuladas, grafo curado à
+mão — para separar a qualidade da *recuperação* da qualidade da *extração*.
+
+**Perguntas relacionais** (n=10), k=5:
+
+| Recuperador | Recall@5 | MRR |
+|---|---:|---:|
+| BM25 | 0,750 | 0,767 |
+| Grafo | **0,800** | 0,708 |
+| Híbrido (RRF) | **0,800** | **0,850** |
+
+```bash
+python -m techscout.evaluation -k 5   # reproduz, sem chave de API
+```
+
+**O que os números dizem — e o que não dizem.** O grafo alcança mais
+documentos relevantes que o BM25, mas os *ordena pior*: encontra o que importa
+e falha em pôr em primeiro. E essa vantagem de recall **não é estável**: o
+grafo ganha em k=2 e k=5 e perde em k=3. Com 15 perguntas, isso é ruído — não
+dá para afirmar que o grafo supera o BM25 em recall.
+
+O achado que se sustenta é outro: **o híbrido é igual ou melhor que ambos em
+todos os cortes de k e nas duas métricas**. É o que justifica manter as duas
+estruturas em vez de escolher uma. Nas perguntas factuais de controle o BM25
+acerta tudo, como esperado — se o grafo tivesse vencido ali, o dataset estaria
+enviesado.
+
+Metodologia, procedência e limitações em
+[docs/BENCHMARK_RESULTS.md](docs/BENCHMARK_RESULTS.md). Ainda **não** medido:
+acurácia da extração de triplas por LLM e fidelidade da resposta final.
 
 ## Arquitetura
 
@@ -124,6 +152,7 @@ que mais alteram o comportamento:
 ```bash
 make check     # lint + typecheck + test — o mesmo que a CI roda
 make test      # pytest com cobertura de branch e piso de 75%
+make eval      # Recall@K e MRR do grafo, do BM25 e da fusão
 ```
 
 Testes não podem depender de chave de API nem de rede. `TripleExtractor` e
@@ -134,10 +163,15 @@ caminho degradado. Detalhes em [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Em ordem de importância para quem for avaliar o projeto:
 
-1. **Sem baseline de recuperação.** Não há dataset rotulado nem métrica de
-   qualidade. A hipótese de que o grafo melhora respostas relacionais é
-   plausível e não verificada aqui.
-2. **A qualidade das triplas é a qualidade do LLM.** A extração usa um
+1. **O baseline é pequeno demais para ser conclusivo.** 15 perguntas e 15
+   documentos: uma pergunta a mais ou a menos move o Recall em ~0,07. Trate
+   diferenças abaixo de ~0,10 como indistinguíveis, e veja a
+   [inversão em k=3](docs/BENCHMARK_RESULTS.md#leitura-honesta) antes de citar
+   qualquer número.
+2. **O grafo do benchmark é curado, não extraído.** Isso é proposital — isola
+   recuperação de extração — mas significa que o erro de extração por LLM
+   *não* está contabilizado nos números publicados.
+3. **A qualidade das triplas é a qualidade do LLM.** A extração usa um
    vocabulário fechado (`fundou`, `investiu_em`, `adquiriu`, …) e temperatura
    0, o que dá consistência, não correção. Triplas erradas viram arestas
    erradas, e o grafo não sabe distingui-las.
@@ -164,6 +198,7 @@ via documento** é um vetor real. Ver [SECURITY.md](SECURITY.md).
 
 ## Documentação
 
+- [Resultados do baseline de recuperação](docs/BENCHMARK_RESULTS.md)
 - [Arquitetura detalhada](docs/ARCHITECTURE.md)
 - [Fontes de dados e ingestão online](docs/DATA_SOURCES.md)
 - [Uso da interface](docs/USAGE.md)

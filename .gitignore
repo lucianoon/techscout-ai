@@ -18,10 +18,12 @@ venv/
 env/
 ENV/
 
-# Artefatos gerados pela ingestão.
-# `data/` inteiro é ignorado, exceto os exemplos versionados em data/samples/.
+# Artefatos gerados pela ingestão (ChromaDB, grafo serializado).
+# `data/` é ignorado por padrão, exceto o corpus de exemplo e o dataset de
+# avaliação, que são versionados por serem entrada e não saída.
 data/*
 !data/samples/
+!data/eval/
 *.pkl
 
 # Logs

@@ -1,0 +1,81 @@
+{
+  "version": "corpus_v1",
+  "descricao": "Corpus sintético de notícias de mercado. Cada documento afirma essencialmente um fato, de modo que perguntas relacionais exijam atravessar dois ou mais textos. Entidades e eventos são fictícios.",
+  "documentos": [
+    {
+      "id": "d01",
+      "titulo": "Ex-engenheira do Google funda startup de otimização de LLMs",
+      "texto": "Ana Souza, que passou seis anos na infraestrutura de machine learning do Google, fundou a Nebula AI. A empresa desenvolve técnicas de otimização de inferência para modelos de linguagem em larga escala."
+    },
+    {
+      "id": "d02",
+      "titulo": "Nebula AI levanta Series A de US$ 10 milhões",
+      "texto": "A Nebula AI anunciou uma rodada Series A de US$ 10 milhões liderada pela Horizon Ventures. Os recursos serão usados para expandir a equipe de pesquisa."
+    },
+    {
+      "id": "d03",
+      "titulo": "Horizon Ventures deixa a OldTech com retorno recorde",
+      "texto": "A Horizon Ventures vendeu sua participação na OldTech, encerrando um investimento de sete anos com o maior retorno já registrado pelo fundo."
+    },
+    {
+      "id": "d04",
+      "titulo": "OldTech perde seu diretor de tecnologia",
+      "texto": "Pedro Santos deixou o cargo de CTO da OldTech, que ocupava desde 2019. Ele foi responsável pela migração da companhia para arquitetura de nuvem."
+    },
+    {
+      "id": "d05",
+      "titulo": "Nebula AI reforça conselho técnico",
+      "texto": "A Nebula AI anunciou Pedro Santos como consultor técnico. Ele apoiará a empresa em decisões de infraestrutura e escalabilidade."
+    },
+    {
+      "id": "d06",
+      "titulo": "Nebula AI compra a DataPonte",
+      "texto": "A Nebula AI adquiriu a DataPonte, especializada em pipelines de dados. O valor da transação não foi divulgado."
+    },
+    {
+      "id": "d07",
+      "titulo": "A trajetória do fundador da DataPonte",
+      "texto": "Rafael Duarte fundou a DataPonte em 2018, após anos trabalhando com engenharia de dados no setor financeiro."
+    },
+    {
+      "id": "d08",
+      "titulo": "Horizon Ventures promove nova sócia",
+      "texto": "Marina Klein foi promovida a sócia da Horizon Ventures. Ela lidera as teses de investimento em infraestrutura e saúde."
+    },
+    {
+      "id": "d09",
+      "titulo": "Orbita Bio nasce para acelerar diagnósticos",
+      "texto": "Clara Nogueira fundou a Orbita Bio, que desenvolve plataformas de diagnóstico molecular assistido por computador."
+    },
+    {
+      "id": "d10",
+      "titulo": "Lumen Capital aposta em diagnóstico molecular",
+      "texto": "A Lumen Capital investiu na Orbita Bio em rodada semente. É a primeira posição do fundo no setor de saúde."
+    },
+    {
+      "id": "d11",
+      "titulo": "Como a Lumen Capital entrou na OldTech",
+      "texto": "A Lumen Capital investiu na OldTech em 2016, participando da rodada que financiou a expansão internacional da companhia."
+    },
+    {
+      "id": "d12",
+      "titulo": "Engenharia da DataPonte perde nome de peso",
+      "texto": "Bruno Alencar, engenheiro-chefe da DataPonte, deixou a companhia após quatro anos à frente da plataforma de ingestão."
+    },
+    {
+      "id": "d13",
+      "titulo": "Orbita Bio anuncia diretor de tecnologia",
+      "texto": "Bruno Alencar assumiu como CTO da Orbita Bio, onde lidera a construção da plataforma de análise genômica."
+    },
+    {
+      "id": "d14",
+      "titulo": "OldTech incorpora a TechNorte",
+      "texto": "A OldTech adquiriu a TechNorte, ampliando sua atuação em integração de sistemas legados no mercado corporativo."
+    },
+    {
+      "id": "d15",
+      "titulo": "Orbita Bio forma conselho consultivo",
+      "texto": "Marina Klein passou a integrar o conselho consultivo da Orbita Bio, contribuindo com experiência em escala comercial."
+    }
+  ]
+}

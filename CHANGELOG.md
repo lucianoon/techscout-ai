@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.3.0
+
+Baseline de recuperação medido — a lacuna que o README da 0.2.0 declarava.
+
+- Dataset rotulado versionado em `data/eval/`: 15 documentos, grafo de
+  referência curado à mão e 15 perguntas com documentos relevantes anotados,
+  separadas em relacionais, relacionais profundas e factuais (controle).
+- `techscout.evaluation`: Recall@K e MRR sobre três recuperadores — BM25,
+  grafo (por proveniência das arestas) e a fusão dos dois por reciprocal rank
+  fusion. Todos determinísticos: rodam na CI sem chave de API.
+- Proveniência nas arestas do grafo. `add_triple` passa a aceitar `fonte` e
+  acumula os documentos que sustentam cada fato — é o que permite comparar
+  grafo e busca por passagem na mesma escala, e completa a promessa do README
+  de mostrar *por que* uma conexão foi afirmada.
+- `GraphRAG.retrieve_documents`, que rankeia documentos por arestas-ponte
+  entre os nós citados na pergunta. A primeira versão pontuava por volume de
+  arestas e deixava nós-hub arrastarem documentos irrelevantes para o topo
+  (MRR 0,524); a pontuação por produto das proximidades corrigiu isso
+  (MRR 0,722).
+- `make eval` e um passo na CI que reexecuta o baseline a cada push, para que
+  uma mudança de ranqueamento apareça no log em vez de invalidar em silêncio
+  os números publicados.
+- 45 testes novos, incluindo integridade do dataset: toda fonte de tripla e
+  todo documento rotulado precisam existir no corpus, e casos relacionais
+  precisam exigir dois ou mais documentos.
+- `docs/BENCHMARK_RESULTS.md` com procedência, resultados e a leitura honesta:
+  a vantagem de recall do grafo **não é estável** (ganha em k=2 e k=5, perde
+  em k=3, o que a n=15 é ruído). O achado que se sustenta é que a fusão supera
+  ambos em todos os cortes.
+
 ## 0.2.0
 
 Preparação do repositório para uso público. O comportamento em tempo de

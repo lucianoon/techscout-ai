@@ -30,18 +30,46 @@ hops; the vector index covers everything else.
 
 | Evidence | What it demonstrates |
 |---|---|
-| 126 offline tests | Graph, persistence, LLM parsing, ingestion and data sources |
+| Measured baseline: Recall@K and MRR | Graph, BM25 and their fusion, over a labelled dataset |
+| 171 offline tests | Graph, persistence, LLM parsing, ingestion, sources and metrics |
 | 82% branch coverage, ≥ 75% gate in CI | Coverage measured, regressions blocked |
-| Suite runs without `OPENAI_API_KEY` | Dependency injection plus degradation paths |
+| Suite and baseline run without `OPENAI_API_KEY` | Dependency injection plus deterministic retrievers |
+| Baseline re-run on every push | A ranking change shows up in the CI log |
 | `ruff` + `mypy` as gates | Lint and types enforced, not aspirational |
 | JSON persistence, pickle refused | Loading a graph does not execute arbitrary code |
-| Explicit degradation without a key | Semantic search falls back to textual instead of failing |
 
-**What is not measured:** this repository has **no** retrieval-quality
-baseline. There is no labelled dataset, no Recall@K, no MRR — so there is no
-basis to claim the graph improves answers over plain vector search. The tests
-guarantee the system behaves as specified, not that the extracted triples are
-factually correct. See [limitations](#known-limitations).
+## Retrieval baseline
+
+Both sides return a ranked list of documents and are scored against the same
+labels. 15 documents, 15 labelled questions, hand-curated graph — to separate
+*retrieval* quality from *extraction* quality.
+
+**Relational questions** (n=10), k=5:
+
+| Retriever | Recall@5 | MRR |
+|---|---:|---:|
+| BM25 | 0.750 | 0.767 |
+| Graph | **0.800** | 0.708 |
+| Hybrid (RRF) | **0.800** | **0.850** |
+
+```bash
+python -m techscout.evaluation -k 5   # reproduces it, no API key
+```
+
+**What the numbers say — and what they don't.** The graph reaches more
+relevant documents than BM25, but *ranks them worse*: it finds what matters
+and fails to put it first. And that recall advantage is **not stable**: the
+graph wins at k=2 and k=5 and loses at k=3. With 15 questions that is noise —
+there is no basis to claim the graph beats BM25 on recall.
+
+The finding that does hold is different: **the hybrid matches or beats both at
+every k and on both metrics**. That is what justifies keeping both structures
+instead of picking one. On the factual control questions BM25 scores
+perfectly, as expected — had the graph won there, the dataset would be biased.
+
+Methodology, provenance and limitations in
+[docs/BENCHMARK_RESULTS.md](docs/BENCHMARK_RESULTS.md). Still **not** measured:
+LLM triple-extraction accuracy and final-answer faithfulness.
 
 ## Architecture
 
@@ -124,6 +152,7 @@ most change behaviour:
 ```bash
 make check     # lint + typecheck + test — exactly what CI runs
 make test      # pytest with branch coverage and a 75% floor
+make eval      # Recall@K and MRR for the graph, BM25 and their fusion
 ```
 
 Tests must not depend on an API key or the network. `TripleExtractor` and
@@ -134,10 +163,15 @@ degraded path. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 In order of importance to anyone evaluating this project:
 
-1. **No retrieval baseline.** There is no labelled dataset and no quality
-   metric. The hypothesis that the graph improves relational answers is
-   plausible and unverified here.
-2. **Triple quality is LLM quality.** Extraction uses a closed vocabulary
+1. **The baseline is too small to be conclusive.** 15 questions and 15
+   documents: one question more or less moves Recall by ~0.07. Treat gaps
+   below ~0.10 as indistinguishable, and read the
+   [k=3 inversion](docs/BENCHMARK_RESULTS.md#leitura-honesta) before quoting
+   any number.
+2. **The benchmark graph is curated, not extracted.** That is deliberate — it
+   isolates retrieval from extraction — but it means LLM extraction error is
+   *not* accounted for in the published numbers.
+3. **Triple quality is LLM quality.** Extraction uses a closed vocabulary
    (`founded`, `invested_in`, `acquired`, …) at temperature 0, which buys
    consistency, not correctness. Wrong triples become wrong edges, and the
    graph cannot tell them apart.
@@ -164,6 +198,7 @@ injection through an ingested document** is a real vector. See
 
 ## Documentation
 
+- [Retrieval baseline results](docs/BENCHMARK_RESULTS.md)
 - [Detailed architecture](docs/ARCHITECTURE.md)
 - [Data sources and online ingestion](docs/DATA_SOURCES.md)
 - [Interface usage](docs/USAGE.md)

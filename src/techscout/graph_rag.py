@@ -112,15 +112,20 @@ class GraphRAG:
             self.logger.error(f"Erro ao construir índice vetorial de nós: {e}")
             return False
     
-    def add_triple(self, sujeito: str, relacao: str, objeto: str) -> bool:
+    def add_triple(
+        self, sujeito: str, relacao: str, objeto: str, fonte: str | None = None
+    ) -> bool:
         """
         Adiciona uma tripla ao grafo
-        
+
         Args:
             sujeito: Entidade origem
             relacao: Tipo de relação
             objeto: Entidade destino
-            
+            fonte: Identificador do documento que afirmou a relação. Fica
+                acumulado na aresta, de modo que um fato do grafo possa ser
+                rastreado até os textos que o sustentam.
+
         Returns:
             True se adicionado com sucesso
         """
@@ -131,21 +136,30 @@ class GraphRAG:
                     f"{sujeito} - {relacao} - {objeto}"
                 )
                 return False
-            
-            self.graph.add_edge(sujeito, objeto, relation=relacao)
+
+            # O grafo é simples: reafirmar a mesma dupla sobrescreve a relação,
+            # mas as fontes se somam — dois artigos podem sustentar o mesmo fato.
+            fontes: list[str] = []
+            if self.graph.has_edge(sujeito, objeto):
+                fontes = list(self.graph[sujeito][objeto].get("sources", []))
+            if fonte and fonte not in fontes:
+                fontes.append(fonte)
+
+            self.graph.add_edge(sujeito, objeto, relation=relacao, sources=fontes)
             self.logger.debug(f"Tripla adicionada: {sujeito} --[{relacao}]--> {objeto}")
             return True
         except Exception as e:
             self.logger.error(f"Erro ao adicionar tripla: {e}")
             return False
-    
+
     def add_triples(self, triples: list[dict[str, str]]) -> int:
         """
         Adiciona múltiplas triplas ao grafo
-        
+
         Args:
-            triples: Lista de dicionários com chaves 'sujeito', 'relacao', 'objeto'
-            
+            triples: Lista de dicionários com chaves 'sujeito', 'relacao',
+                'objeto' e, opcionalmente, 'fonte'
+
         Returns:
             Número de triplas adicionadas com sucesso
         """
@@ -154,45 +168,51 @@ class GraphRAG:
             if self.add_triple(
                 triple.get('sujeito', ''),
                 triple.get('relacao', ''),
-                triple.get('objeto', '')
+                triple.get('objeto', ''),
+                triple.get('fonte') or None,
             ):
                 count += 1
         return count
     
+    def _match_nodes(self, query: str) -> set[str]:
+        """Nós cujo rótulo contém algum termo significativo da consulta."""
+        termos = [t.lower() for t in query.split() if len(t) > 2]
+        if not termos:
+            return set()
+        return {
+            node
+            for node in self.graph.nodes
+            if any(termo in node.lower() for termo in termos)
+        }
+
+    def _expand(self, nos: set[str], expansion_depth: int) -> set[str]:
+        """Acrescenta vizinhos até `expansion_depth` graus de separação."""
+        expandidos = set(nos)
+        for _ in range(expansion_depth):
+            vizinhos: set[str] = set()
+            for node in expandidos:
+                vizinhos.update(self.graph.neighbors(node))
+            expandidos.update(vizinhos)
+        return expandidos
+
     def search(self, query: str, expansion_depth: int = 1) -> list[str]:
         """
         Busca no grafo por entidades mencionadas na query
-        
+
         Args:
             query: Texto da consulta
             expansion_depth: Profundidade de expansão (graus de separação)
-            
+
         Returns:
             Lista de fatos encontrados no formato "GRAFO: sujeito --[relacao]--> objeto"
         """
         fatos = []
-        termos = [t.lower() for t in query.split() if len(t) > 2]
-        
-        if not termos:
+        if not [t for t in query.split() if len(t) > 2]:
             self.logger.warning("Nenhum termo significativo na query")
             return ["Nenhum termo significativo encontrado na pergunta."]
-        
-        nós_encontrados = set()
-        
-        # Busca direta
-        for node in self.graph.nodes:
-            node_lower = node.lower()
-            if any(termo in node_lower for termo in termos):
-                nós_encontrados.add(node)
-        
-        # Expansão
-        nós_expandidos = set(nós_encontrados)
-        for _ in range(expansion_depth):
-            novos_nós = set()
-            for node in nós_expandidos:
-                novos_nós.update(self.graph.neighbors(node))
-            nós_expandidos.update(novos_nós)
-        
+
+        nós_expandidos = self._expand(self._match_nodes(query), expansion_depth)
+
         # Coleta relações
         visto = set()
         for node in nós_expandidos:
@@ -210,6 +230,69 @@ class GraphRAG:
             f"Encontradas {len(fatos)} relações no grafo para query: {query[:50]}"
         )
         return fatos
+
+    def retrieve_documents(
+        self, query: str, k: int = 5, expansion_depth: int = 1
+    ) -> list[str]:
+        """
+        Recupera documentos-fonte percorrendo o grafo.
+
+        Rankeia por quantas arestas alcançadas pela consulta citam cada
+        documento: quanto mais fatos relevantes um texto sustenta, mais alto
+        ele aparece. É esse método que torna a recuperação por grafo
+        comparável, na mesma escala, à recuperação por passagem — ver
+        `techscout.evaluation`.
+
+        Args:
+            query: Texto da consulta
+            k: Número máximo de documentos retornados
+            expansion_depth: Graus de separação percorridos
+
+        Returns:
+            Ids de documentos, do mais para o menos citado
+        """
+        if not [t for t in query.split() if len(t) > 2]:
+            return []
+
+        diretos = self._match_nodes(query)
+        if not diretos:
+            return []
+        expandidos = self._expand(diretos, expansion_depth)
+
+        # Quantos nós citados na pergunta cada nó toca (ele próprio conta).
+        # Um nó adjacente a dois deles é uma ponte — exatamente o que uma
+        # pergunta relacional procura.
+        def proximidade(node: str) -> int:
+            alcance = {node} | set(self.graph.neighbors(node))
+            return len(alcance & diretos)
+
+        proximidades = {node: proximidade(node) for node in expandidos}
+
+        pontuacao: dict[str, float] = {}
+        vistas: set[tuple[str, str]] = set()
+        for node in expandidos:
+            for vizinho, dados in self.graph[node].items():
+                aresta = (min(node, vizinho), max(node, vizinho))
+                if aresta in vistas:
+                    continue
+                vistas.add(aresta)
+
+                # Produto, não soma: uma aresta só pontua alto quando as duas
+                # pontas se ancoram na pergunta. Assim um hub muito conectado
+                # deixa de arrastar para o topo tudo o que encosta nele.
+                a, b = aresta
+                peso = float(
+                    proximidades.get(a, proximidade(a))
+                    * proximidades.get(b, proximidade(b))
+                )
+                if peso <= 0:
+                    continue
+                for fonte in dados.get("sources", []):
+                    pontuacao[fonte] = pontuacao.get(fonte, 0.0) + peso
+
+        # Desempate pelo id, para que o ranking seja determinístico.
+        ordenados = sorted(pontuacao.items(), key=lambda par: (-par[1], par[0]))
+        return [doc_id for doc_id, _ in ordenados[:k]]
 
     def semantic_search(
         self, query: str, top_k_nodes: int = 5, expansion_depth: int = 1

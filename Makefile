@@ -1,4 +1,4 @@
-.PHONY: help install lint typecheck test cov check run ingest docker clean
+.PHONY: help install lint typecheck test cov check eval run ingest docker clean
 
 help:
 	@echo "install    instala o pacote com dependências de desenvolvimento"
@@ -6,6 +6,7 @@ help:
 	@echo "typecheck  mypy"
 	@echo "test       pytest com cobertura de branch e piso de 75%"
 	@echo "check      lint + typecheck + test (o que a CI roda)"
+	@echo "eval       Recall@K e MRR do grafo, do BM25 e da fusão"
 	@echo "run        sobe a interface Streamlit"
 	@echo "ingest     executa a ingestão de dados"
 	@echo "docker     constrói a imagem"
@@ -29,6 +30,9 @@ cov: test
 	@echo "relatório em htmlcov/index.html"
 
 check: lint typecheck test
+
+eval:
+	python -m techscout.evaluation -k 5
 
 run:
 	streamlit run streamlit_app.py

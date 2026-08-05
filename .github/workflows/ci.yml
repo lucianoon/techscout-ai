@@ -34,6 +34,12 @@ jobs:
           coverage report --show-missing --skip-covered --fail-under=75
           coverage json -o coverage.json
 
+      - name: Retrieval baseline
+        # Determinístico e sem chave de API. Roda a cada push para que uma
+        # mudança no ranqueamento apareça no log em vez de silenciosamente
+        # invalidar os números publicados em docs/BENCHMARK_RESULTS.md.
+        run: python -m techscout.evaluation -k 5
+
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
         with:
