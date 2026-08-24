@@ -7,7 +7,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
 <!-- DEMO_LINK_START -->
-*Demo pública: em breve.*
+**[🌐 Demo ao vivo](https://techscout-demo.onrender.com)** — GraphRAG respondendo sobre o corpus de exemplo.
 <!-- DEMO_LINK_END -->
 
 Um sistema de inteligência de mercado que trata **relações** como cidadãs de
