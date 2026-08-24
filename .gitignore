@@ -21,9 +21,14 @@ ENV/
 # Artefatos gerados pela ingestão (ChromaDB, grafo serializado).
 # `data/` é ignorado por padrão, exceto o corpus de exemplo e o dataset de
 # avaliação, que são versionados por serem entrada e não saída.
+# Os artefatos do corpus de exemplo (grafo + índices) também são versionados:
+# a demo pública na Render não tem disco persistente e os recebe via imagem.
 data/*
 !data/samples/
 !data/eval/
+!data/graph_data.json
+!data/chroma_db/
+!data/chroma_graph_nodes/
 *.pkl
 
 # Logs
