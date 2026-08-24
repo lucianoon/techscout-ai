@@ -2,6 +2,7 @@
 Lógica de negócio para busca e processamento
 """
 import contextlib
+import os
 from collections import OrderedDict
 
 import streamlit as st
@@ -17,7 +18,7 @@ from techscout.vector_store import VectorStore
 def load_data():
     """
     Carrega grafo e vector store com cache
-    
+
     Returns:
         Tupla (graph_rag, vector_store) ou (None, None) em caso de erro
     """
@@ -26,15 +27,17 @@ def load_data():
         graph_rag = GraphRAG.load()
         if not graph_rag:
             return None, None
-        
+
         # Inicializa vector store
         vector_store = VectorStore()
         if not vector_store.initialize():
             return None, None
-        
+
         return graph_rag, vector_store
     except Exception as e:
-        logger.error(f"Erro ao carregar dados: {e}")
+        logger.error(f"Erro ao carregar dados: {e}", exc_info=True)
+        if os.getenv("LOG_LEVEL", "").upper() == "DEBUG":
+            st.error(f"🧨 load_data falhou: {type(e).__name__}: {e}")
         return None, None
 
 
