@@ -1,0 +1,18 @@
+# Blueprint da Render: `render blueprint launch` ou New + → Blueprint no dashboard.
+# Plano free hiberna após 15 min ociosos; o workflow keepalive faz ping a cada 10 min.
+services:
+  - type: web
+    name: techscout-demo
+    runtime: docker
+    plan: free
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false # preenchido no dashboard; o app falha explícito sem ela
+      - key: OPENAI_MODEL
+        value: gpt-3.5-turbo
+      - key: LOG_LEVEL
+        value: INFO
+
+# Nota: o plano free não tem disco persistente — o grafo e o índice são
+# reconstruídos a cada cold start. Para persistência real, migre para Starter.

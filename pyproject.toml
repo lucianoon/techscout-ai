@@ -23,8 +23,8 @@ dependencies = [
   "python-dotenv>=1.0",
   "requests>=2.31",
   "feedparser>=6.0",
-  # chromadb exige sqlite3 >= 3.35; imagens slim costumam trazer versão antiga.
-  "pysqlite3-binary; sys_platform == 'linux'",
+  # chromadb exige sqlite3 >= 3.35: as imagens python-slim atuais trazem 3.46+,
+  # então pysqlite3-binary (removido do PyPI, sem wheels) não é mais necessário.
 ]
 
 [project.optional-dependencies]

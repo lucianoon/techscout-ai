@@ -6,6 +6,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+<!-- DEMO_LINK_START -->
+*Public demo: coming soon.*
+<!-- DEMO_LINK_END -->
+
 A market-intelligence system that treats **relationships** as first-class
 citizens. An LLM extracts *subject–relation–object* triples from news articles
 and materialises them into a NetworkX graph; in parallel, the same texts go

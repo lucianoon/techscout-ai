@@ -6,6 +6,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
+<!-- DEMO_LINK_START -->
+*Demo pública: em breve.*
+<!-- DEMO_LINK_END -->
+
 Um sistema de inteligência de mercado que trata **relações** como cidadãs de
 primeira classe. Um LLM extrai triplas *sujeito–relação–objeto* de notícias e
 as materializa em um grafo NetworkX; em paralelo, os textos vão para um índice
@@ -135,6 +139,16 @@ source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 
 cp .env.example .env           # preencha OPENAI_API_KEY
+```
+
+### Deploy público (Render)
+
+O repositório inclui um blueprint (`render.yaml`) e um assistente interativo
+que conduz o deploy passo a passo — cria o serviço, configura a chave, captura
+a URL pública e ativa o keep-alive:
+
+```bash
+bash scripts/deploy-render-wizard.sh
 ```
 
 ## Uso
