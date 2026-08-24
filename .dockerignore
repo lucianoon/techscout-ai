@@ -19,11 +19,17 @@ __pycache__/
 coverage.json
 htmlcov/
 
-# Dados e logs gerados: a imagem monta volumes para isso
-data/
+# Logs gerados: a imagem cria o diretório vazio
 logs/
 *.log
 *.pkl
+
+# Dados gerados ficam de fora, EXCETO os artefatos pré-processados do corpus
+# de exemplo, que precisam entrar na imagem para a demo nascer consultável.
+data/*
+!data/graph_data.json
+!data/chroma_db/
+!data/chroma_graph_nodes/
 
 # Documentação não afeta o runtime
 docs/

@@ -17,7 +17,13 @@ COPY streamlit_app.py ./
 COPY scripts/ ./scripts/
 COPY .streamlit/ ./.streamlit/
 
-RUN mkdir -p data logs
+# Artefatos do corpus de exemplo pré-processados (grafo + ChromaDB): a demo
+# já nasce consultável, sem exigir ingestão no primeiro acesso.
+COPY data/graph_data.json ./data/graph_data.json
+COPY data/chroma_db ./data/chroma_db
+COPY data/chroma_graph_nodes ./data/chroma_graph_nodes
+
+RUN mkdir -p logs
 
 ENV PYTHONUNBUFFERED=1 \
     LOG_LEVEL=INFO \
