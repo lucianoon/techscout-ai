@@ -7,7 +7,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
 <!-- DEMO_LINK_START -->
-*Public demo: coming soon.*
+**[🌐 Live demo](https://techscout-demo.onrender.com)** — GraphRAG answering over the sample corpus.
 <!-- DEMO_LINK_END -->
 
 A market-intelligence system that treats **relationships** as first-class
