@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Builds reproduzíveis: `uv.lock` passa a fixar todas as dependências. O CI
+  instala com `uv sync --locked` e a imagem Docker usa o mesmo lockfile, então
+  local, CI e produção resolvem exatamente as mesmas versões. As instruções de
+  instalação e o `Makefile` migram para `uv`.
+- Imagem Docker roda como usuário sem privilégios. O CI passa a subir a imagem
+  construída e a consultar `/_stcore/health`, em vez de apenas construí-la.
+- Dependabot para `uv` (mensal, minor/patch agrupados) e GitHub Actions;
+  `upload-artifact` atualizado para v7. CodeQL habilitado no repositório.
+
 ## 0.4.0
 
 Extração por LLM medida contra o grafo curado — a lacuna que a 0.3.0 deixou

@@ -20,7 +20,7 @@ Este script verifica:
 ### Passo 1: Instalar Dependências
 
 ```bash
-pip install -e ".[dev]"
+uv sync --extra dev --locked
 ```
 
 ### Passo 2: Configurar API Key

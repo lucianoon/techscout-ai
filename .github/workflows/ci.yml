@@ -12,41 +12,43 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
-          cache: pip
+          enable-cache: true
 
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        # --locked falha se o uv.lock estiver fora de sincronia com o pyproject:
+        # o CI testa exatamente o que a imagem Docker instala.
+        run: uv sync --extra dev --locked
 
       - name: Lint
-        run: ruff check .
+        run: uv run ruff check .
 
       - name: Type check
-        run: mypy
+        run: uv run mypy
 
       - name: Run tests with branch coverage
         # A suíte roda sem OPENAI_API_KEY: os caminhos que exigem rede são
         # cobertos por injeção de dependência ou pelo fallback sem chave.
         run: |
-          coverage run -m pytest -q
-          coverage report --show-missing --skip-covered --fail-under=75
-          coverage json -o coverage.json
+          uv run coverage run -m pytest -q
+          uv run coverage report --show-missing --skip-covered --fail-under=75
+          uv run coverage json -o coverage.json
 
       - name: Retrieval baseline
         # Determinístico e sem chave de API. Roda a cada push para que uma
         # mudança no ranqueamento apareça no log em vez de silenciosamente
         # invalidar os números publicados em docs/BENCHMARK_RESULTS.md.
-        run: python -m techscout.evaluation -k 5
+        run: uv run python -m techscout.evaluation -k 5
 
       - name: Extraction baseline
         # Lê a extração cacheada em data/eval/ — não chama a API. Regerar o
         # cache é ato deliberado (`make eval-extraction-refresh`).
-        run: python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5
+        run: uv run python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5
 
       - name: Upload coverage data
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-data
           path: coverage.json
@@ -57,5 +59,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+
       - name: Build image
         run: docker build --tag techscout-ai:ci .
+
+      # Construir não basta: o smoke sobe o container como ele roda no Render,
+      # confirma que o Streamlit atende e que o processo não é root.
+      - name: Smoke test image
+        run: |
+          docker run --detach --name techscout -p 8501:8501 techscout-ai:ci
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8501/_stcore/health; then
+              echo; echo "Streamlit respondeu na tentativa $i"
+              docker exec techscout id -u | grep -qv '^0$' || { echo "container roda como root"; exit 1; }
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs techscout
+          exit 1
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f techscout || true
