@@ -1,7 +1,7 @@
 .PHONY: help install lint typecheck test cov check eval run ingest docker clean
 
 help:
-	@echo "install    instala o pacote com dependências de desenvolvimento"
+	@echo "install    uv sync --extra dev --locked (mesmas versões do CI e da imagem)"
 	@echo "lint       ruff check"
 	@echo "typecheck  mypy"
 	@echo "test       pytest com cobertura de branch e piso de 75%"
@@ -14,39 +14,39 @@ help:
 	@echo "clean      remove caches e artefatos de cobertura"
 
 install:
-	pip install -e ".[dev]"
+	uv sync --extra dev --locked
 
 lint:
-	ruff check .
+	uv run ruff check .
 
 typecheck:
-	mypy
+	uv run mypy
 
 test:
-	coverage run -m pytest -q
-	coverage report --show-missing --skip-covered --fail-under=75
+	uv run coverage run -m pytest -q
+	uv run coverage report --show-missing --skip-covered --fail-under=75
 
 cov: test
-	coverage html
+	uv run coverage html
 	@echo "relatório em htmlcov/index.html"
 
 check: lint typecheck test
 
 eval:
-	python -m techscout.evaluation -k 5
+	uv run python -m techscout.evaluation -k 5
 
 eval-extraction:
-	python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5
+	uv run python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5
 
 # Reextrai chamando a API — consome créditos e reescreve o cache versionado.
 eval-extraction-refresh:
-	python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5 --refresh
+	uv run python -m techscout.extraction_eval --model gpt-3.5-turbo -k 5 --refresh
 
 run:
-	streamlit run streamlit_app.py
+	uv run streamlit run streamlit_app.py
 
 ingest:
-	python scripts/ingest.py
+	uv run python scripts/ingest.py
 
 docker:
 	docker build --tag techscout-ai:local .

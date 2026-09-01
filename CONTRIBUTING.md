@@ -3,9 +3,7 @@
 ## Ambiente
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+uv sync --extra dev --locked   # instala o pacote e as dependências travadas no uv.lock
 cp .env.example .env           # preencha OPENAI_API_KEY
 ```
 

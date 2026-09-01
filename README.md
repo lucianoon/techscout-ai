@@ -134,12 +134,14 @@ notícias (RSS / NewsAPI / arquivo)
 ```bash
 git clone https://github.com/lucianoon/techscout-ai.git
 cd techscout-ai
-python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+uv sync --extra dev --locked   # instala o pacote e as dependências travadas no uv.lock
 
 cp .env.example .env           # preencha OPENAI_API_KEY
 ```
+
+As versões vêm de `uv.lock`, então o ambiente local, o CI e a imagem Docker
+resolvem exatamente as mesmas dependências. Instale o [uv](https://docs.astral.sh/uv/)
+se ainda não tiver; os comandos do `Makefile` já usam `uv run`.
 
 ### Deploy público (Render)
 
